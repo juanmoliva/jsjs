@@ -23,7 +23,8 @@ func main() {
 	flag.IntVarP(&Threads, "threads", "t", 5, "number of threads, default 5")
 	flag.BoolVarP(&DebugMode, "debug", "d", false, "enable debug mode")
 	flag.StringVar(&Proxy, "proxy", "", "proxy URL")
-	flag.StringArrayVar(&Headers, "header", []string{}, "custom headers")
+	flag.StringArrayVarP(&Headers, "header", "H", []string{}, "HTTP header to include in the request")
+
 	flag.Parse()
 
 	var HeadersMap = make(map[string]string)
