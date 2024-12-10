@@ -18,11 +18,23 @@ func main() {
 	var Threads int
 	var DebugMode bool
 	var Proxy string
+	var Headers []string
 
 	flag.IntVarP(&Threads, "threads", "t", 5, "number of threads, default 5")
 	flag.BoolVarP(&DebugMode, "debug", "d", false, "enable debug mode")
 	flag.StringVar(&Proxy, "proxy", "", "proxy URL")
+	flag.StringArrayVar(&Headers, "header", []string{}, "custom headers")
 	flag.Parse()
+
+	var HeadersMap = make(map[string]string)
+	for _, header := range Headers {
+		parts := strings.Split(header, ":")
+		if len(parts) != 2 {
+			fmt.Fprintf(os.Stderr, "invalid header: %s\n", header)
+			os.Exit(1)
+		}
+		HeadersMap[parts[0]] = parts[1]
+	}
 
 	// spin up an output worker
 	output := make(chan string)
@@ -64,7 +76,7 @@ func main() {
 		go func(i int) {
 			defer wg.Done()
 			for url := range jobs {
-				source, err := getSource(url, &httpClients[i])
+				source, err := getSource(url, &httpClients[i], HeadersMap)
 
 				if err != nil {
 					errs <- err
@@ -95,10 +107,11 @@ func main() {
 
 }
 
-func getSource(url string, client *requests.HttpClient) ([]byte, error) {
+func getSource(url string, client *requests.HttpClient, headers map[string]string) ([]byte, error) {
 
 	httpReqConfig := requests.HttpReqConfig{
-		HTTPMethod: requests.GET,
+		HTTPMethod:  requests.GET,
+		HTTPHeaders: headers,
 	}
 
 	httpResp, err := client.Make(url, httpReqConfig)
