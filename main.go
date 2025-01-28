@@ -176,7 +176,7 @@ func extractURLsAndSecrets(filename string, source []byte, output chan string, e
 		"searchparam",
 		"urlsearch",
 		"urlparam",
-		"postMessage",
+		"postmessage",
 		"istener('message",
 		"istener(\"message)",
 	}
