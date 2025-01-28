@@ -168,4 +168,24 @@ func extractURLsAndSecrets(filename string, source []byte, output chan string, e
 		}
 		output <- string(j)
 	}
+
+	// strings to find xss sources. non case sensitive.
+	domXssStrings := []string{
+		"location.search",
+		"location.hash",
+		"searchparam",
+		"urlsearch",
+		"urlparam",
+		"postMessage",
+		"istener('message",
+		"istener(\"message)",
+	}
+
+	for _, domXssString := range domXssStrings {
+		if strings.Contains(strings.ToLower(string(source)), domXssString) {
+			count := strings.Count(strings.ToLower(string(source)), domXssString)
+			output <- fmt.Sprintf("{\"filename\": \"%s\", \"kind\": \"xssSource\", \"sourceFound\": \"%s\", \"count\": %d}", filename, domXssString, count)
+		}
+	}
+
 }
